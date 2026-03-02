@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { toast } from 'sonner';
@@ -55,64 +54,74 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onSuccess }) => {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>{isSignUp ? 'Create Account' : 'Sign In'}</CardTitle>
-        <CardDescription>
-          {isSignUp ? 'Join ExpenseTrack and start tracking your expenses' : 'Welcome back to ExpenseTrack'}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleAuth} className="space-y-4">
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-2"
-            />
+    <div className="w-full max-w-md mx-auto p-8 space-y-6">
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-bold tracking-tight">
+          {isSignUp ? 'Create your account' : 'Welcome back'}
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          {isSignUp ? 'Join ExpenseTrack and start tracking your expenses' : 'Sign in to your account to continue'}
+        </p>
+      </div>
+
+      <form onSubmit={handleAuth} className="space-y-4">
+        <div className="space-y-1">
+          <Label htmlFor="email" className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="h-12 bg-background/50 border-border/50 rounded-xl focus-visible:ring-primary/20"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="password" className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="h-12 bg-background/50 border-border/50 rounded-xl focus-visible:ring-primary/20"
+          />
+        </div>
+
+        <Button type="submit" className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:-translate-y-0.5 mt-2" disabled={loading}>
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              {isSignUp ? 'Creating account...' : 'Signing in...'}
+            </>
+          ) : isSignUp ? (
+            'Create Account'
+          ) : (
+            'Sign In'
+          )}
+        </Button>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-border/50"></div>
           </div>
-
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="mt-2"
-            />
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background/80 backdrop-blur-sm px-2 text-muted-foreground font-medium">Or continue with</span>
           </div>
+        </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isSignUp ? 'Creating account...' : 'Signing in...'}
-              </>
-            ) : isSignUp ? (
-              'Create Account'
-            ) : (
-              'Sign In'
-            )}
-          </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            className="w-full"
-            onClick={() => setIsSignUp(!isSignUp)}
-          >
-            {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full h-12 rounded-xl text-sm font-medium border-border/50 bg-background/50 hover:bg-muted/50"
+          onClick={() => setIsSignUp(!isSignUp)}
+        >
+          {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+        </Button>
+      </form>
+    </div>
   );
 };

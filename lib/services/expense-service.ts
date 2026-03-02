@@ -9,6 +9,7 @@ import {
   orderBy,
   Timestamp,
   getDocs,
+  onSnapshot,
   QueryConstraint,
 } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -84,6 +85,28 @@ export const deleteExpense = async (expenseId: string) => {
     console.error('Error deleting expense:', error);
     throw error;
   }
+};
+
+export const subscribeToExpenses = (
+  userId: string,
+  callback: (expenses: Expense[]) => void,
+  constraints: QueryConstraint[] = [],
+) => {
+  const q = query(
+    collection(db, 'expenses'),
+    where('userId', '==', userId),
+    orderBy('date', 'desc'),
+    ...constraints,
+  );
+  return onSnapshot(q, (snapshot) => {
+    const expenses = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      date: doc.data().date.toDate(),
+      createdAt: doc.data().createdAt.toDate(),
+    } as Expense));
+    callback(expenses);
+  });
 };
 
 export const getExpenses = async (userId: string, constraints: QueryConstraint[] = []) => {

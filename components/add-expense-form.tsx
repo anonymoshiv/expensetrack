@@ -58,6 +58,7 @@ export const AddExpenseForm: React.FC<AddExpenseFormProps> = ({ onSuccess, autoC
     setIsLoading(true);
     try {
       await addExpense(firebaseUser.uid, {
+        userId: firebaseUser.uid,
         amount: data.amount,
         description: data.description,
         category: data.category as Category,
@@ -75,63 +76,71 @@ export const AddExpenseForm: React.FC<AddExpenseFormProps> = ({ onSuccess, autoC
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <Label htmlFor="amount">Amount</Label>
-        <Input
-          id="amount"
-          type="number"
-          step="0.01"
-          placeholder="0.00"
-          {...register('amount', { valueAsNumber: true })}
-          className="mt-2"
-        />
-        {errors.amount && <p className="text-destructive text-sm mt-1">{errors.amount.message}</p>}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <div className="flex gap-4">
+        <div className="flex-1">
+          <Label htmlFor="amount" className="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Amount</Label>
+          <div className="relative mt-1.5">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+            <Input
+              id="amount"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              {...register('amount', { valueAsNumber: true })}
+              className="pl-8 text-lg font-medium bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20"
+            />
+          </div>
+          {errors.amount && <p className="text-destructive text-sm mt-1">{errors.amount.message}</p>}
+        </div>
+
+        <div className="flex-1">
+          <Label htmlFor="date" className="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Date</Label>
+          <Input
+            id="date"
+            type="date"
+            {...register('date')}
+            className="mt-1.5 text-base bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20"
+          />
+          {errors.date && <p className="text-destructive text-sm mt-1">{errors.date.message}</p>}
+        </div>
       </div>
 
       <div>
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description" className="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Description</Label>
         <Input
           id="description"
           type="text"
-          placeholder="What did you spend on?"
+          placeholder="What did you spend on? e.g. Coffee"
           {...register('description')}
-          className="mt-2"
+          className="mt-1.5 bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20 placeholder:text-muted-foreground/50"
         />
         {errors.description && <p className="text-destructive text-sm mt-1">{errors.description.message}</p>}
       </div>
 
       <div>
-        <Label htmlFor="category">Category</Label>
+        <Label htmlFor="category" className="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Category</Label>
         <Select defaultValue="other" onValueChange={(value) => setValue('category', value as Category)}>
-          <SelectTrigger className="mt-2">
+          <SelectTrigger className="mt-1.5 bg-background/50 border-border/50 h-12 rounded-xl focus:ring-primary/20">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="rounded-xl border-border/50 shadow-xl">
             {Object.entries(categoryConfig).map(([key, config]) => (
-              <SelectItem key={key} value={key}>
-                {config.name}
+              <SelectItem key={key} value={key} className="rounded-lg cursor-pointer">
+                <div className="flex items-center gap-2">
+                  <config.icon className="w-4 h-4" style={{ color: config.color }} />
+                  <span>{config.name}</span>
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      <div>
-        <Label htmlFor="date">Date</Label>
-        <Input
-          id="date"
-          type="date"
-          {...register('date')}
-          className="mt-2"
-        />
-        {errors.date && <p className="text-destructive text-sm mt-1">{errors.date.message}</p>}
-      </div>
-
-      <Button type="submit" className="w-full" disabled={isLoading}>
+      <Button type="submit" className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:-translate-y-0.5" disabled={isLoading}>
         {isLoading ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             Adding...
           </>
         ) : (

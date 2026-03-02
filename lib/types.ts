@@ -1,5 +1,9 @@
 export type Category = 'food' | 'transport' | 'entertainment' | 'utilities' | 'shopping' | 'health' | 'education' | 'other';
 
+export type IncomeSource = 'salary' | 'freelance' | 'business' | 'investment' | 'rental' | 'gift' | 'other';
+
+export type PaymentApp = 'gpay' | 'paytm' | 'phonepe' | 'amazonpay' | 'slice' | 'cred' | 'cash' | 'card' | 'other';
+
 export interface Expense {
   id: string;
   userId: string;
@@ -8,9 +12,38 @@ export interface Expense {
   description: string;
   date: Date;
   createdAt: Date;
-  splitWith?: string[]; // user IDs this expense is split with
-  paymentMethod?: 'cash' | 'card' | 'upi' | 'other';
-  receipt?: string; // URL to receipt image
+  splitWith?: string[];
+  paymentMethod?: PaymentApp;
+  receipt?: string;
+  isFromUPI?: boolean;
+  upiRef?: string;
+}
+
+export interface Income {
+  id: string;
+  userId: string;
+  amount: number;
+  source: IncomeSource;
+  description: string;
+  date: Date;
+  createdAt: Date;
+  isRecurring?: boolean;
+  recurringFrequency?: 'weekly' | 'monthly' | 'yearly';
+}
+
+export interface Subscription {
+  id: string;
+  userId: string;
+  name: string;
+  amount: number;
+  billingCycle: 'weekly' | 'monthly' | 'yearly';
+  nextBillingDate: Date;
+  category: Category;
+  isActive: boolean;
+  emoji?: string;
+  paymentApp?: PaymentApp;
+  createdAt: Date;
+  lastAutoAdded?: Date;
 }
 
 export interface Budget {

@@ -7,7 +7,6 @@ import { useAuth } from '@/lib/auth-context'
 import { DashboardHeader } from '@/components/dashboard-header'
 import { BudgetAlerts } from '@/components/budget-alerts'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -99,35 +98,40 @@ export default function BudgetsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardHeader user={user} />
+    <div className="min-h-[100dvh] bg-background relative pb-24 pt-8">
+      {/* Background decoration */}
+      <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-primary/5 to-transparent -z-10 pointer-events-none" />
 
-      <div className="container max-w-2xl mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto px-4">
         <Link href="/">
-          <Button variant="ghost" className="mb-6">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+          <Button variant="ghost" className="mb-6 -ml-4 gap-2 text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
           </Button>
         </Link>
+        <div className="mb-8">
+          <DashboardHeader />
+        </div>
 
         <div className="space-y-8">
           <BudgetAlerts budgets={budgets} />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Set New Budget</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="bg-card shadow-sm border border-border/50 rounded-3xl p-5 mb-8">
+            <h2 className="text-xl font-semibold tracking-tight mb-4">Set New Budget</h2>
+            <div className="space-y-4">
               <div>
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category" className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Category</Label>
                 <Select value={newBudget.category} onValueChange={(value) => setNewBudget({ ...newBudget, category: value })}>
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger className="mt-1.5 bg-background/50 border-border/50 h-12 rounded-xl focus:ring-primary/20">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl border-border/50 shadow-xl">
                     {Object.entries(categoryConfig).map(([key, config]) => (
-                      <SelectItem key={key} value={key}>
-                        {config.name}
+                      <SelectItem key={key} value={key} className="rounded-lg cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <config.icon className="w-4 h-4" style={{ color: config.color }} />
+                          <span>{config.name}</span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -135,50 +139,78 @@ export default function BudgetsPage() {
               </div>
 
               <div>
-                <Label htmlFor="limit">Monthly Limit (₹)</Label>
-                <Input
-                  id="limit"
-                  type="number"
-                  value={newBudget.limit}
-                  onChange={(e) => setNewBudget({ ...newBudget, limit: Number(e.target.value) })}
-                  placeholder="1000"
-                  className="mt-2"
-                  min="0"
-                  step="100"
-                />
+                <Label htmlFor="limit" className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Monthly Limit (₹)</Label>
+                <div className="relative mt-1.5">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+                  <Input
+                    id="limit"
+                    type="number"
+                    value={newBudget.limit}
+                    onChange={(e) => setNewBudget({ ...newBudget, limit: Number(e.target.value) })}
+                    placeholder="1000"
+                    className="pl-8 text-lg font-medium bg-background/50 border-border/50 h-12 rounded-xl focus-visible:ring-primary/20"
+                    min="0"
+                    step="100"
+                  />
+                </div>
               </div>
 
-              <Button onClick={handleAddBudget} className="w-full" disabled={loading}>
+              <Button onClick={handleAddBudget} className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:-translate-y-0.5 mt-2" disabled={loading}>
                 {loading ? 'Adding...' : 'Add Budget'}
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {budgets.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>All Budgets</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {budgets.map(budget => (
-                    <div key={budget.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                      <div>
-                        <p className="font-medium">{budget.category}</p>
-                        <p className="text-sm text-muted-foreground">₹{budget.spent.toFixed(2)} of ₹{budget.limit.toFixed(2)}</p>
+          <h2 className="text-xl font-semibold tracking-tight mb-4">All Budgets</h2>
+          {budgets.length > 0 ? (
+            <div className="space-y-4">
+              {budgets.map(budget => {
+                  const categoryInfo = categoryConfig[budget.category];
+                  const Icon = categoryInfo?.icon;
+                  const percentage = Math.min((budget.spent / budget.limit) * 100, 100);
+                  const isOver = budget.spent >= budget.limit;
+
+                  return (
+                    <div key={budget.id} className="group relative flex flex-col p-5 rounded-2xl bg-card border border-border/40 shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          {Icon && categoryInfo && (
+                            <div className="p-2.5 rounded-xl" style={{ backgroundColor: categoryInfo.color + '15' }}>
+                              <Icon className="w-5 h-5" style={{ color: categoryInfo.color }} />
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-semibold text-foreground capitalize tracking-tight">{budget.category}</p>
+                            <p className="text-xs font-medium text-muted-foreground mt-0.5">₹{budget.spent.toFixed(2)} spent</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-base tracking-tight">₹{budget.limit.toFixed(2)}</p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 text-destructive hover:bg-destructive/10 -mr-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleDeleteBudget(budget.id)}
+                          >
+                            Remove
+                          </Button>
+                        </div>
                       </div>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteBudget(budget.id)}
-                      >
-                        Remove
-                      </Button>
+                      
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-destructive' : 'bg-primary'}`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground bg-card border border-border/40 rounded-2xl border-dashed">
+              <p>No budgets found. Create one above!</p>
+            </div>
           )}
         </div>
       </div>

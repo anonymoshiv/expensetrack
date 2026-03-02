@@ -1,7 +1,6 @@
 'use client'
 
 import { Trophy, Flame, Star } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { GamificationStats } from '@/lib/types'
 
 interface GamificationWidgetProps {
@@ -10,6 +9,8 @@ interface GamificationWidgetProps {
 
 export function GamificationWidget({ stats }: GamificationWidgetProps) {
   const badgeEmojis: Record<string, string> = {
+    'Starter': '🌱',
+    'Saver': '💸',
     'Spender': '💰',
     'Budget Master': '🎯',
     'Consistent Tracker': '📊',
@@ -18,78 +19,59 @@ export function GamificationWidget({ stats }: GamificationWidgetProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Flame className="text-accent" size={20} />
-            Streak & Level
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-primary/10 rounded-lg p-4 text-center">
-              <p className="text-sm text-muted-foreground">Current Streak</p>
-              <p className="text-2xl font-bold text-accent">{stats.currentStreak}</p>
+    <div className="space-y-6 p-4">
+      <div className="bg-background/50 rounded-2xl p-6 border border-border/50">
+        <h3 className="text-lg font-bold tracking-tight mb-6 flex items-center gap-2">
+          <Flame className="text-accent" size={24} />
+          Streak & Level
+        </h3>
+        <div className="space-y-6">
+          <div className="grid grid-cols-3 gap-3 mt-4">
+            <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 text-center transition-transform hover:scale-105">
+              <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-1">Current</p>
+              <p className="text-2xl font-bold text-accent">{stats.currentStreak} <span className="text-sm">days</span></p>
             </div>
-            <div className="bg-primary/10 rounded-lg p-4 text-center">
-              <p className="text-sm text-muted-foreground">Longest Streak</p>
-              <p className="text-2xl font-bold text-primary">{stats.longestStreak}</p>
+            <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 text-center transition-transform hover:scale-105">
+              <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-1">Longest</p>
+              <p className="text-2xl font-bold text-primary">{stats.longestStreak} <span className="text-sm">days</span></p>
             </div>
-            <div className="bg-primary/10 rounded-lg p-4 text-center">
-              <p className="text-sm text-muted-foreground">Level</p>
+            <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 text-center transition-transform hover:scale-105">
+              <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground mb-1">Level</p>
               <p className="text-2xl font-bold text-primary">{stats.level}</p>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-sm">
-              <span>Experience Points</span>
-              <span className="font-semibold">{stats.points} / 500 XP</span>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center text-sm font-medium">
+              <span className="text-muted-foreground">Experience Points</span>
+              <span className="text-primary">{stats.points} <span className="text-muted-foreground">/ 500 XP</span></span>
             </div>
-            <div className="w-full bg-muted rounded-full h-2">
+            <div className="w-full bg-muted/50 rounded-full h-3 overflow-hidden border border-border/50">
               <div
-                className="bg-gradient-to-r from-primary to-accent h-2 rounded-full transition-all"
+                className="bg-gradient-to-r from-primary to-accent h-full rounded-full transition-all duration-1000 ease-out"
                 style={{ width: `${(stats.points / 500) * 100}%` }}
               />
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {stats.badges.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="text-accent" size={20} />
-              Badges Earned
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {stats.badges.map(badge => (
-                <div key={badge} className="bg-accent/10 border border-accent/30 rounded-full px-3 py-1 flex items-center gap-2 text-sm">
-                  <span>{badgeEmojis[badge] || '⭐'}</span>
-                  <span className="font-medium">{badge}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-background/50 rounded-2xl p-6 border border-border/50">
+          <h3 className="text-lg font-bold tracking-tight mb-4 flex items-center gap-2">
+            <Trophy className="text-primary" size={24} />
+            Badges Earned
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {stats.badges.map(badge => (
+              <div key={badge} className="bg-accent/10 hover:bg-accent/20 transition-colors border border-accent/20 rounded-xl px-4 py-2 flex items-center gap-2">
+                <span className="text-xl">{badgeEmojis[badge] || '⭐'}</span>
+                <span className="font-semibold text-sm tracking-tight">{badge}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Star className="text-accent" size={20} />
-            Total Expenses Tracked
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-3xl font-bold text-primary">{stats.totalExpenses.toFixed(2)}</p>
-          <p className="text-sm text-muted-foreground mt-2">Keep tracking to earn more badges!</p>
-        </CardContent>
-      </Card>
     </div>
   )
 }

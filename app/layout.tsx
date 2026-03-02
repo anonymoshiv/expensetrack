@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: 'ExpenseTrack - Smart Expense Management',
   description: 'Track your expenses with AI-powered categorization, smart budgeting, and gamification',
   generator: 'v0.app',
+  manifest: '/manifest.json',
   viewport: {
     width: 'device-width',
     initialScale: 1,
