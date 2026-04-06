@@ -94,3 +94,9 @@
     @apply tracking-tight;
   }
 }
+
+@layer utilities {
+  .app-page-container {
+    @apply w-full max-w-480 mx-auto px-4 sm:px-6 lg:px-10 xl:px-16;
+  }
+}

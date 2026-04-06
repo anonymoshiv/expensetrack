@@ -10,7 +10,7 @@ import { AddExpenseForm } from '@/components/add-expense-form';
 import { ExpenseList } from '@/components/expense-list';
 import { UPIImport } from '@/components/upi-import';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, BarChart3, TrendingUp, Wallet, RefreshCw, Smartphone } from 'lucide-react';
+import { PlusCircle, BarChart3, Smartphone, TrendingUp } from 'lucide-react';
 
 function HomeContent() {
   const { user, loading } = useAuth();
@@ -65,11 +65,11 @@ function HomeContent() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background relative pb-24">
+    <div className="min-h-dvh bg-background relative pb-24">
       {/* Background decoration */}
-      <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-primary/5 to-transparent -z-10 pointer-events-none" />
+      <div className="absolute top-0 inset-x-0 h-64 bg-linear-to-b from-primary/5 to-transparent -z-10 pointer-events-none" />
       
-      <div className="max-w-2xl mx-auto p-4 space-y-8 pt-8">
+      <div className="app-page-container space-y-8 pt-8">
         <div className="flex items-start justify-between">
           <DashboardHeader />
         </div>
@@ -127,34 +127,6 @@ function HomeContent() {
         </section>
       </div>
 
-      {/* Floating Bottom Nav for Mobile Feel */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm">
-        <div className="flex items-center justify-around bg-background/80 backdrop-blur-xl border border-border/50 shadow-2xl p-2 rounded-full">
-          <Button variant="ghost" className="rounded-full w-12 h-12 flex flex-col gap-0.5 text-primary bg-primary/10">
-            <PlusCircle className="w-5 h-5" />
-          </Button>
-          <Link href="/income">
-            <Button variant="ghost" className="rounded-full w-12 h-12 flex flex-col gap-0.5 text-muted-foreground hover:text-foreground">
-              <Wallet className="w-5 h-5" />
-            </Button>
-          </Link>
-          <Link href="/budgets">
-            <Button variant="ghost" className="rounded-full w-12 h-12 flex flex-col gap-0.5 text-muted-foreground hover:text-foreground">
-              <TrendingUp className="w-5 h-5" />
-            </Button>
-          </Link>
-          <Link href="/subscriptions">
-            <Button variant="ghost" className="rounded-full w-12 h-12 flex flex-col gap-0.5 text-muted-foreground hover:text-foreground">
-              <RefreshCw className="w-5 h-5" />
-            </Button>
-          </Link>
-          <Link href="/analytics">
-            <Button variant="ghost" className="rounded-full w-12 h-12 flex flex-col gap-0.5 text-muted-foreground hover:text-foreground">
-              <BarChart3 className="w-5 h-5" />
-            </Button>
-          </Link>
-        </div>
-      </div>
     </div>
   );
 }

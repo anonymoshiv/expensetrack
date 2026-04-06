@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { DashboardHeader } from '@/components/dashboard-header'
 import { BudgetAlerts } from '@/components/budget-alerts'
@@ -98,22 +96,18 @@ export default function BudgetsPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background relative pb-24 pt-8">
+    <div className="min-h-dvh bg-background relative pb-24">
       {/* Background decoration */}
-      <div className="absolute top-0 inset-x-0 h-64 bg-gradient-to-b from-primary/5 to-transparent -z-10 pointer-events-none" />
+      <div className="absolute top-0 inset-x-0 h-64 bg-linear-to-b from-primary/5 to-transparent -z-10 pointer-events-none" />
 
-      <div className="max-w-2xl mx-auto px-4">
-        <Link href="/">
-          <Button variant="ghost" className="mb-6 -ml-4 gap-2 text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Button>
-        </Link>
-        <div className="mb-8">
-          <DashboardHeader />
+      <div className="app-page-container">
+        <div className="pt-6 pb-2">
+          <h1 className="text-2xl font-extrabold tracking-tight">Budgets</h1>
         </div>
 
-        <div className="space-y-8">
+        <DashboardHeader />
+
+        <div className="mt-6 space-y-8">
           <BudgetAlerts budgets={budgets} />
 
           <div className="bg-card shadow-sm border border-border/50 rounded-3xl p-5 mb-8">

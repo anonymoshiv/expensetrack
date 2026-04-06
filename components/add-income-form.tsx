@@ -21,7 +21,13 @@ const incomeSchema = z.object({
   date: z.string(),
   isRecurring: z.boolean().optional(),
   recurringFrequency: z.enum(['weekly', 'monthly', 'yearly']).optional(),
-});
+}).refine(
+  (data) => !data.isRecurring || !!data.recurringFrequency,
+  {
+    message: 'Frequency is required for recurring income',
+    path: ['recurringFrequency'],
+  }
+);
 
 type IncomeForm = z.infer<typeof incomeSchema>;
 
@@ -50,6 +56,7 @@ export const AddIncomeForm: React.FC<AddIncomeFormProps> = ({ onSuccess }) => {
       date: new Date().toISOString().split('T')[0],
       source: 'salary',
       isRecurring: false,
+      recurringFrequency: 'monthly',
     },
   });
 
@@ -76,6 +83,7 @@ export const AddIncomeForm: React.FC<AddIncomeFormProps> = ({ onSuccess }) => {
         date: new Date().toISOString().split('T')[0],
         source: 'salary',
         isRecurring: false,
+        recurringFrequency: 'monthly',
       });
       setIsRecurring(false);
       onSuccess?.();
@@ -148,8 +156,12 @@ export const AddIncomeForm: React.FC<AddIncomeFormProps> = ({ onSuccess }) => {
         <button
           type="button"
           onClick={() => {
-            setIsRecurring(!isRecurring);
-            setValue('isRecurring', !isRecurring);
+            const nextRecurringState = !isRecurring;
+            setIsRecurring(nextRecurringState);
+            setValue('isRecurring', nextRecurringState);
+            if (nextRecurringState) {
+              setValue('recurringFrequency', watch('recurringFrequency') ?? 'monthly');
+            }
           }}
           className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus-visible:outline-none ${isRecurring ? 'bg-primary' : 'bg-muted'}`}
         >
@@ -164,7 +176,7 @@ export const AddIncomeForm: React.FC<AddIncomeFormProps> = ({ onSuccess }) => {
       {isRecurring && (
         <div>
           <Label className="text-muted-foreground text-xs uppercase tracking-wider font-semibold">Frequency</Label>
-          <Select defaultValue="monthly" onValueChange={(v) => setValue('recurringFrequency', v as any)}>
+          <Select defaultValue={watch('recurringFrequency') ?? 'monthly'} onValueChange={(v) => setValue('recurringFrequency', v as 'weekly' | 'monthly' | 'yearly')}>
             <SelectTrigger className="mt-1.5">
               <SelectValue />
             </SelectTrigger>
@@ -174,6 +186,7 @@ export const AddIncomeForm: React.FC<AddIncomeFormProps> = ({ onSuccess }) => {
               <SelectItem value="yearly">Yearly</SelectItem>
             </SelectContent>
           </Select>
+          {errors.recurringFrequency && <p className="text-destructive text-sm mt-1">{errors.recurringFrequency.message}</p>}
         </div>
       )}
 

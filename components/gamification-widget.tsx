@@ -1,6 +1,6 @@
 'use client'
 
-import { Trophy, Flame, Star } from 'lucide-react'
+import { Trophy, Flame } from 'lucide-react'
 import { GamificationStats } from '@/lib/types'
 
 interface GamificationWidgetProps {
@@ -8,6 +8,11 @@ interface GamificationWidgetProps {
 }
 
 export function GamificationWidget({ stats }: GamificationWidgetProps) {
+  const XP_PER_LEVEL = 200
+  const levelBaseXp = Math.max(stats.level - 1, 0) * XP_PER_LEVEL
+  const currentLevelXp = Math.max(stats.points - levelBaseXp, 0)
+  const levelProgress = Math.min((currentLevelXp / XP_PER_LEVEL) * 100, 100)
+
   const badgeEmojis: Record<string, string> = {
     'Starter': '🌱',
     'Saver': '💸',
@@ -44,14 +49,15 @@ export function GamificationWidget({ stats }: GamificationWidgetProps) {
           <div className="space-y-3">
             <div className="flex justify-between items-center text-sm font-medium">
               <span className="text-muted-foreground">Experience Points</span>
-              <span className="text-primary">{stats.points} <span className="text-muted-foreground">/ 500 XP</span></span>
+              <span className="text-primary">{currentLevelXp} <span className="text-muted-foreground">/ {XP_PER_LEVEL} XP</span></span>
             </div>
             <div className="w-full bg-muted/50 rounded-full h-3 overflow-hidden border border-border/50">
               <div
-                className="bg-gradient-to-r from-primary to-accent h-full rounded-full transition-all duration-1000 ease-out"
-                style={{ width: `${(stats.points / 500) * 100}%` }}
+                className="bg-linear-to-r from-primary to-accent h-full rounded-full transition-all duration-1000 ease-out"
+                style={{ width: `${levelProgress}%` }}
               />
             </div>
+            <p className="text-xs text-muted-foreground">Total XP: {stats.points}</p>
           </div>
         </div>
       </div>

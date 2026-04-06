@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { AddIncomeForm, sourceConfig } from '@/components/add-income-form';
-import { deleteIncome, getIncome } from '@/lib/services/income-service';
+import { deleteIncome, getIncome, processRecurringIncomeDue } from '@/lib/services/income-service';
 import { useAuth } from '@/lib/auth-context';
 import { Income } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,6 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 export default function IncomePage() {
-  const router = useRouter();
   const { firebaseUser } = useAuth();
   const [income, setIncome] = useState<Income[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,8 +21,12 @@ export default function IncomePage() {
     if (!firebaseUser) return;
     setLoading(true);
     try {
+      const autoAddedCount = await processRecurringIncomeDue(firebaseUser.uid);
       const data = await getIncome(firebaseUser.uid);
       setIncome(data);
+      if (autoAddedCount > 0) {
+        toast.success(`${autoAddedCount} recurring income entr${autoAddedCount > 1 ? 'ies' : 'y'} auto-added`);
+      }
     } catch {
       toast.error('Failed to load income');
     } finally {
@@ -62,22 +64,16 @@ export default function IncomePage() {
   });
 
   return (
-    <main className="min-h-screen bg-background pb-32">
-      <div className="max-w-2xl mx-auto px-4">
-        <div className="flex items-center gap-3 pt-6 pb-2">
-          <button
-            onClick={() => router.back()}
-            className="p-2.5 rounded-xl hover:bg-muted transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
+    <main className="min-h-dvh bg-background pb-32">
+      <div className="app-page-container">
+        <div className="pt-6 pb-2">
           <h1 className="text-2xl font-extrabold tracking-tight">Income</h1>
         </div>
 
         <DashboardHeader />
 
         {/* Summary */}
-        <div className="mt-6 p-6 rounded-3xl bg-gradient-to-br from-emerald-500/15 to-teal-500/10 border border-emerald-500/20">
+        <div className="mt-6 p-6 rounded-3xl bg-linear-to-br from-emerald-500/15 to-teal-500/10 border border-emerald-500/20">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-1.5 bg-emerald-500/20 rounded-lg">
               <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />

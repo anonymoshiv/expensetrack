@@ -1,17 +1,15 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { SubscriptionManager } from '@/components/subscription-manager';
 import { getSubscriptions, processSubscriptionsDue } from '@/lib/services/subscription-service';
 import { useAuth } from '@/lib/auth-context';
 import { Subscription } from '@/lib/types';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SubscriptionsPage() {
-  const router = useRouter();
   const { firebaseUser } = useAuth();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,16 +58,10 @@ export default function SubscriptionsPage() {
   }, [loading, handleProcessDue]);
 
   return (
-    <main className="min-h-screen bg-background pb-32">
-      <div className="max-w-2xl mx-auto px-4">
+    <main className="min-h-dvh bg-background pb-32">
+      <div className="app-page-container">
         <div className="flex items-center justify-between pt-6 pb-2">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.back()}
-              className="p-2.5 rounded-xl hover:bg-muted transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
+          <div>
             <h1 className="text-2xl font-extrabold tracking-tight">Subscriptions</h1>
           </div>
           <button

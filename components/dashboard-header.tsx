@@ -4,41 +4,78 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { subscribeToExpenses } from '@/lib/services/expense-service';
-import { getMonthlyIncome } from '@/lib/services/income-service';
-import { LogOut, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
-import Link from 'next/link';
+import { getIncome } from '@/lib/services/income-service';
+import { LogOut, TrendingUp, TrendingDown } from 'lucide-react';
 
 export const DashboardHeader: React.FC = () => {
   const { user, logout, firebaseUser } = useAuth();
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);
   const [monthlyIncome, setMonthlyIncome] = useState(0);
+  const [previousExpenses, setPreviousExpenses] = useState(0);
+  const [previousIncome, setPreviousIncome] = useState(0);
+  const [incomeLoaded, setIncomeLoaded] = useState(false);
+  const [expensesLoaded, setExpensesLoaded] = useState(false);
 
   const now = new Date();
-  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
   useEffect(() => {
     if (!firebaseUser) return;
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
     // Subscribe to real-time expense updates
     const unsubscribe = subscribeToExpenses(firebaseUser.uid, (expenses) => {
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const monthlyTotal = expenses
-        .filter((e) => new Date(e.date) >= monthStart)
-        .reduce((sum, e) => sum + e.amount, 0);
+      const { monthlyTotal, previousTotal } = expenses.reduce(
+        (acc, expense) => {
+          const expenseDate = new Date(expense.date);
+          if (expenseDate >= monthStart) {
+            acc.monthlyTotal += expense.amount;
+          } else {
+            acc.previousTotal += expense.amount;
+          }
+          return acc;
+        },
+        { monthlyTotal: 0, previousTotal: 0 }
+      );
+
       setMonthlyExpenses(monthlyTotal);
+      setPreviousExpenses(previousTotal);
+      setExpensesLoaded(true);
     });
 
-    // Fetch income (one-time is fine, doesn't change as often)
-    getMonthlyIncome(firebaseUser.uid, currentMonth)
-      .then(setMonthlyIncome)
-      .catch(console.error);
+    // Fetch income and split into current month + carry-forward bucket
+    getIncome(firebaseUser.uid)
+      .then((incomeEntries) => {
+        const { monthlyTotal, previousTotal } = incomeEntries.reduce(
+          (acc, income) => {
+            const incomeDate = new Date(income.date);
+            if (incomeDate >= monthStart) {
+              acc.monthlyTotal += income.amount;
+            } else {
+              acc.previousTotal += income.amount;
+            }
+            return acc;
+          },
+          { monthlyTotal: 0, previousTotal: 0 }
+        );
+
+        setMonthlyIncome(monthlyTotal);
+        setPreviousIncome(previousTotal);
+        setIncomeLoaded(true);
+      })
+      .catch((error) => {
+        console.error(error);
+        setIncomeLoaded(true);
+      });
 
     return () => unsubscribe();
   }, [firebaseUser]);
 
-  const netSavings = monthlyIncome - monthlyExpenses;
-  const savingsRate = monthlyIncome > 0 ? Math.round((netSavings / monthlyIncome) * 100) : null;
-  const isPositive = netSavings >= 0;
+  const statsReady = incomeLoaded && expensesLoaded;
+  const carryForward = previousIncome - previousExpenses;
+  const netSavings = carryForward + monthlyIncome - monthlyExpenses;
+  const effectiveBase = carryForward > 0 ? carryForward + monthlyIncome : monthlyIncome;
+  const savingsRate = effectiveBase > 0 ? Math.round((netSavings / effectiveBase) * 100) : null;
+  const isPositive = !statsReady || netSavings >= 0;
 
   const handleLogout = async () => {
     await logout();
@@ -70,30 +107,41 @@ export const DashboardHeader: React.FC = () => {
 
       {/* Hero card — Net Savings */}
       <div className={`relative overflow-hidden p-6 rounded-3xl text-white shadow-lg transition-all ${
-        isPositive
-          ? 'bg-gradient-to-br from-primary to-primary/80 shadow-primary/25'
-          : 'bg-gradient-to-br from-red-600 to-rose-700 shadow-red-600/25'
+        !statsReady
+          ? 'bg-linear-to-br from-primary/80 to-primary/60 shadow-primary/20'
+          : isPositive
+          ? 'bg-linear-to-br from-primary to-primary/80 shadow-primary/25'
+          : 'bg-linear-to-br from-red-600 to-rose-700 shadow-red-600/25'
       }`}>
         <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
         <div className="absolute -left-4 -bottom-4 w-32 h-32 bg-black/10 rounded-full blur-2xl" />
 
         <div className="relative z-10">
           <p className="text-white/80 font-medium mb-1 text-sm uppercase tracking-wider">Net Savings This Month</p>
+          {statsReady ? (
+            <p className="text-white/70 text-xs font-medium mb-2">
+              Includes carry forward: ₹{carryForward.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+            </p>
+          ) : (
+            <p className="text-white/70 text-xs font-medium mb-2">Syncing totals...</p>
+          )}
           <div className="flex items-baseline gap-0.5">
-            {!isPositive && <span className="text-3xl font-extrabold opacity-90">−</span>}
+            {statsReady && !isPositive && <span className="text-3xl font-extrabold opacity-90">−</span>}
             <span className="text-2xl opacity-80">₹</span>
             <span className="text-4xl font-extrabold tracking-tight">
-              {Math.abs(netSavings).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              {statsReady
+                ? Math.abs(netSavings).toLocaleString('en-IN', { maximumFractionDigits: 0 })
+                : '...'}
             </span>
-            {savingsRate !== null && (
+            {statsReady && savingsRate !== null && (
               <span className="ml-2 text-sm font-semibold text-white/70">
                 {isPositive ? '+' : '-'}{Math.abs(savingsRate)}%
               </span>
             )}
           </div>
-          {!isPositive && (
+          {statsReady && !isPositive && (
             <p className="text-white/80 text-xs mt-1 font-medium">
-              ₹{(monthlyExpenses - monthlyIncome).toLocaleString('en-IN', { maximumFractionDigits: 0 })} over budget this month
+              ₹{Math.abs(netSavings).toLocaleString('en-IN', { maximumFractionDigits: 0 })} shortfall after carry forward
             </p>
           )}
 
